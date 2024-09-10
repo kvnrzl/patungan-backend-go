@@ -58,4 +58,15 @@ func SetupRoutes(e *echo.Echo) {
 	//campaignRoutes.GET("/campaigns/:id", campaignController.GetByID)
 	campaignRoutes.GET("/campaigns/:title", campaignController.GetByTitle)
 
+	// ====================================================================
+
+	categoryRepository := repositories.InitCategoryRepository()
+	categoryService := services.InitCategoryService(database, categoryRepository)
+	categoryController := controllers.InitCategoryController(categoryService, validate)
+
+	categoryRoutes := e.Group("/api/v1")
+
+	categoryRoutes.GET("/categories", categoryController.GetAll)
+	categoryRoutes.GET("/categories/:id", categoryController.GetByID)
+
 }

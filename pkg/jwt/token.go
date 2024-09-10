@@ -9,10 +9,10 @@ import (
 )
 
 type Claims struct {
-	ID    uint   `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-	Phone string `json:"phone"`
+	UserID uint   `json:"id"`
+	Name   string `json:"name"`
+	Email  string `json:"email"`
+	Phone  string `json:"phone"`
 	jwt.RegisteredClaims
 }
 
@@ -24,14 +24,15 @@ var (
 	Secret = "secret"
 )
 
-func GenerateToken(user models.User, expired int) (string, error) {
+func GenerateToken(user models.User, jwtID string, expired int) (string, error) {
 
 	// prepare the object Claims
 	claims := Claims{
-		ID:    user.ID,
-		Name:  user.Name,
-		Email: user.Email,
+		UserID: user.ID,
+		Name:   user.Name,
+		Email:  user.Email,
 		RegisteredClaims: jwt.RegisteredClaims{
+			ID:        jwtID,
 			Issuer:    "patungan.cuy",
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(expired))),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

@@ -4,6 +4,7 @@ import (
 	"bitbucket.org/bri_bootcamp/fp-patungan-backend-go/dto"
 	"bitbucket.org/bri_bootcamp/fp-patungan-backend-go/models"
 	"bitbucket.org/bri_bootcamp/fp-patungan-backend-go/src/services"
+	"context"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -20,6 +21,8 @@ func InitUserController(service services.UserService, validate *validator.Valida
 		service:  service,
 	}
 }
+
+var ctx = context.Background()
 
 func (uc *UserController) LoginHandler(c echo.Context) error {
 
@@ -43,9 +46,9 @@ func (uc *UserController) LoginHandler(c echo.Context) error {
 	user := userLoginRequest.ToEntity()
 
 	// call service
-	token, err := uc.service.Login(user)
+	token, err := uc.service.Login(ctx, user)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.BaseResponse[string]{
+		return c.JSON(http.StatusInternalServerError, models.BaseResponse[string]{
 			Status:  "failed",
 			Message: err.Error(),
 		})
@@ -82,7 +85,7 @@ func (uc *UserController) RegisterHandler(c echo.Context) error {
 	// call service
 	newUser, err := uc.service.Register(user)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.BaseResponse[string]{
+		return c.JSON(http.StatusInternalServerError, models.BaseResponse[string]{
 			Status:  "failed",
 			Message: err.Error(),
 		})
@@ -92,6 +95,32 @@ func (uc *UserController) RegisterHandler(c echo.Context) error {
 		Status:  "success",
 		Message: "register success",
 		Data:    newUser,
+	})
+
+}
+
+func (uc *UserController) LogoutHandler(c echo.Context) error {
+
+	var userLogoutRequest dto.UserLogoutRequest
+	err := c.Bind(&userLogoutRequest)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, models.BaseResponse[string]{
+			Status:  "failed",
+			Message: "invalid request",
+		})
+	}
+
+	err = uc.service.Logout(ctx, userLogoutRequest.Email)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, models.BaseResponse[string]{
+			Status:  "failed",
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, models.BaseResponse[string]{
+		Status:  "success",
+		Message: "logout success",
 	})
 
 }

@@ -5,9 +5,11 @@ import (
 	"bitbucket.org/bri_bootcamp/fp-patungan-backend-go/models"
 	"bitbucket.org/bri_bootcamp/fp-patungan-backend-go/pkg/jwt"
 	"bitbucket.org/bri_bootcamp/fp-patungan-backend-go/src/repositories"
+	"context"
 	"errors"
 	"fmt"
-	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -15,18 +17,19 @@ import (
 
 type UserService struct {
 	db             *gorm.DB
+	rdb            *redis.Client
 	userRepository repositories.UserRepository
-	validate       *validator.Validate
 }
 
-func InitUserService(db *gorm.DB, repository repositories.UserRepository) UserService {
+func InitUserService(db *gorm.DB, rdb *redis.Client, repository repositories.UserRepository) UserService {
 	return UserService{
 		db:             db,
+		rdb:            rdb,
 		userRepository: repository,
 	}
 }
 
-func (us *UserService) Login(user models.User) (string, error) {
+func (us *UserService) Login(ctx context.Context, user models.User) (string, error) {
 
 	// validate first
 	var userLoginRequest dto.UserLoginRequest
@@ -48,10 +51,18 @@ func (us *UserService) Login(user models.User) (string, error) {
 	}
 
 	// generate jwt
-	token, err := jwt.GenerateToken(newUser, 1)
+	uuidStr := uuid.New().String()
+	token, err := jwt.GenerateToken(newUser, uuidStr, 1)
 	if err != nil {
 		logrus.Println("error generate token :", err)
 		return "", errors.New("error generate token")
+	}
+
+	// set to redis
+	err = us.rdb.Set(ctx, newUser.Email, uuidStr, 0).Err()
+	if err != nil {
+		logrus.Println("error set token to redis :", err)
+		return "", errors.New("error set token to redis")
 	}
 
 	return token, nil
@@ -75,4 +86,15 @@ func (us *UserService) Register(user models.User) (models.User, error) {
 	}
 
 	return newUser, nil
+}
+
+func (us *UserService) Logout(ctx context.Context, email string) error {
+	// delete token from redis
+	err := us.rdb.Del(ctx, email).Err()
+	if err != nil {
+		logrus.Println("error delete token from redis :", err)
+		return errors.New("error delete token from redis")
+	}
+
+	return nil
 }

@@ -17,6 +17,12 @@ func SetupRoutes(e *echo.Echo) {
 
 	validate = validator.New()
 
+	// ====================================================================
+
+	redisClient := db.ConnectToRedis()
+
+	// ====================================================================
+
 	database, err := db.OpenDB()
 	if err != nil {
 		logrus.Fatal("error connect to db")
@@ -29,12 +35,13 @@ func SetupRoutes(e *echo.Echo) {
 
 	// ====================================================================
 	userRepository := repositories.InitUserRepository()
-	userService := services.InitUserService(database, userRepository)
+	userService := services.InitUserService(database, redisClient, userRepository)
 	userController := controllers.InitUserController(userService, validate)
 
 	userRoutes := e.Group("/api/v1")
 
 	userRoutes.POST("/login", userController.LoginHandler)
 	userRoutes.POST("/register", userController.RegisterHandler)
+	userRoutes.POST("/logout", userController.LogoutHandler)
 
 }

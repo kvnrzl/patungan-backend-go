@@ -1,14 +1,14 @@
 package jwt
 
 import (
-	"bitbucket.org/bri_bootcamp/fp-patungan-backend-go/models"
+	"bitbucket.org/bri_bootcamp/patungan-backend-go/models"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/sirupsen/logrus"
 	"time"
 )
 
-type Claims struct {
+type NewClaims struct {
 	UserID uint   `json:"id"`
 	Name   string `json:"name"`
 	Email  string `json:"email"`
@@ -27,7 +27,7 @@ var (
 func GenerateToken(user models.User, jwtID string, expired int) (string, error) {
 
 	// prepare the object Claims
-	claims := Claims{
+	claims := NewClaims{
 		UserID: user.ID,
 		Name:   user.Name,
 		Email:  user.Email,
@@ -44,7 +44,6 @@ func GenerateToken(user models.User, jwtID string, expired int) (string, error) 
 	logrus.Println("token : ", token)
 
 	// make the accessToken more secure with the jwt_secret
-	fmt.Println("Secret : ", Secret)
 	tokenSigned, err := token.SignedString([]byte(Secret))
 	logrus.Println("tokenSigned : ", tokenSigned)
 	if err != nil {
@@ -55,16 +54,15 @@ func GenerateToken(user models.User, jwtID string, expired int) (string, error) 
 	return tokenSigned, nil
 }
 
-func ValidateToken(tokenString string) (*Claims, error) {
+func ValidateToken(tokenString string) (*NewClaims, error) {
 
 	// parse tokenString (with jwt secret) to get the real token (without jwt secret)
-	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		// check dulu jika token methodnya sesuai dengan yang diinginkan, jika sesuai maka kembalikan secret key nya
+	token, err := jwt.ParseWithClaims(tokenString, &NewClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 
-		return Secret, nil
+		return []byte(Secret), nil
 	})
 
 	if err != nil {
@@ -73,10 +71,12 @@ func ValidateToken(tokenString string) (*Claims, error) {
 	}
 
 	// parse token to Claims struct, if ok, return it
-	if claims, ok := token.Claims.(Claims); ok && token.Valid {
-		return &claims, nil
+	if claims, ok := token.Claims.(*NewClaims); ok && token.Valid {
+		logrus.Println("claims : ", claims)
+		return claims, nil
+	} else {
+		logrus.Error("Failed to convert claims to NewClaims")
+		return nil, fmt.Errorf("invalid token claims")
 	}
-
-	return nil, err
 
 }

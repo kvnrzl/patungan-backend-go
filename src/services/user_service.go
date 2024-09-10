@@ -1,10 +1,10 @@
 package services
 
 import (
-	"bitbucket.org/bri_bootcamp/fp-patungan-backend-go/dto"
-	"bitbucket.org/bri_bootcamp/fp-patungan-backend-go/models"
-	"bitbucket.org/bri_bootcamp/fp-patungan-backend-go/pkg/jwt"
-	"bitbucket.org/bri_bootcamp/fp-patungan-backend-go/src/repositories"
+	"bitbucket.org/bri_bootcamp/patungan-backend-go/dto"
+	"bitbucket.org/bri_bootcamp/patungan-backend-go/models"
+	"bitbucket.org/bri_bootcamp/patungan-backend-go/pkg/jwt"
+	"bitbucket.org/bri_bootcamp/patungan-backend-go/src/repositories"
 	"context"
 	"errors"
 	"fmt"

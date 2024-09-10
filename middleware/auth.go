@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"bitbucket.org/bri_bootcamp/fp-patungan-backend-go/pkg/jwt"
+	"bitbucket.org/bri_bootcamp/patungan-backend-go/pkg/jwt"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	"net/http"

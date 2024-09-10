@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"bitbucket.org/bri_bootcamp/fp-patungan-backend-go/dto"
-	"bitbucket.org/bri_bootcamp/fp-patungan-backend-go/models"
-	"bitbucket.org/bri_bootcamp/fp-patungan-backend-go/src/services"
+	"bitbucket.org/bri_bootcamp/patungan-backend-go/dto"
+	"bitbucket.org/bri_bootcamp/patungan-backend-go/models"
+	"bitbucket.org/bri_bootcamp/patungan-backend-go/src/services"
 	"context"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"

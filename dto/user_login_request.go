@@ -1,6 +1,6 @@
 package dto
 
-import "bitbucket.org/bri_bootcamp/fp-patungan-backend-go/models"
+import "bitbucket.org/bri_bootcamp/patungan-backend-go/models"
 
 type UserLoginRequest struct {
 	Email    string `json:"email" validate:"required,email"`

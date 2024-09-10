@@ -1,6 +1,6 @@
 module bitbucket.org/bri_bootcamp/patungan-backend-go
 
-go 1.21.4
+go 1.23.0
 
 require (
 	github.com/go-playground/validator/v10 v10.22.1

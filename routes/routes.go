@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"bitbucket.org/bri_bootcamp/patungan-backend-go/middleware"
 	"bitbucket.org/bri_bootcamp/patungan-backend-go/models"
 	"bitbucket.org/bri_bootcamp/patungan-backend-go/pkg/db"
 	"bitbucket.org/bri_bootcamp/patungan-backend-go/src/controllers"
@@ -28,7 +29,7 @@ func SetupRoutes(e *echo.Echo) {
 		logrus.Fatal("error connect to db")
 	}
 
-	err = database.AutoMigrate(&models.User{})
+	err = database.AutoMigrate(&models.User{}, &models.Category{}, &models.Campaign{})
 	if err != nil {
 		logrus.Fatal("error migrate table")
 	}
@@ -43,5 +44,18 @@ func SetupRoutes(e *echo.Echo) {
 	userRoutes.POST("/login", userController.LoginHandler)
 	userRoutes.POST("/register", userController.RegisterHandler)
 	userRoutes.POST("/logout", userController.LogoutHandler)
+
+	// ====================================================================
+
+	campaignRepository := repositories.InitCampaignRepository()
+	campaignService := services.InitCampaignService(database, campaignRepository)
+	campaignController := controllers.InitCampaignController(campaignService, validate)
+
+	campaignRoutes := e.Group("/api/v1")
+
+	campaignRoutes.POST("/campaigns", middleware.AuthMiddleware(campaignController.Create))
+	campaignRoutes.GET("/campaigns", campaignController.GetAll)
+	//campaignRoutes.GET("/campaigns/:id", campaignController.GetByID)
+	campaignRoutes.GET("/campaigns/:title", campaignController.GetByTitle)
 
 }

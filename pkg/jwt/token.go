@@ -31,6 +31,7 @@ func GenerateToken(user models.User, jwtID string, expired int) (string, error) 
 		UserID: user.ID,
 		Name:   user.Name,
 		Email:  user.Email,
+		Phone:  user.Phone,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID:        jwtID,
 			Issuer:    "patungan.cuy",

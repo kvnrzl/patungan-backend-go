@@ -44,6 +44,7 @@ func SetupRoutes(e *echo.Echo) {
 	userRoutes.POST("/login", userController.LoginHandler)
 	userRoutes.POST("/register", userController.RegisterHandler)
 	userRoutes.POST("/logout", userController.LogoutHandler)
+	userRoutes.GET("/user/profile", middleware.AuthMiddleware(userController.GetUserProfileHandler))
 
 	// ====================================================================
 

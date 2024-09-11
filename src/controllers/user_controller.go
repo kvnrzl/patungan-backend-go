@@ -7,6 +7,7 @@ import (
 	"context"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 	"net/http"
 )
 
@@ -123,4 +124,29 @@ func (uc *UserController) LogoutHandler(c echo.Context) error {
 		Message: "logout success",
 	})
 
+}
+
+func (uc *UserController) GetUserProfileHandler(c echo.Context) error {
+
+	if c.Get("email").(string) == "" {
+		return c.JSON(http.StatusUnauthorized, models.BaseResponse[string]{
+			Status:  "failed",
+			Message: "unauthorized",
+		})
+	}
+
+	user := models.User{
+		Model: gorm.Model{
+			ID: c.Get("userID").(uint),
+		},
+		Name:  c.Get("name").(string),
+		Email: c.Get("email").(string),
+		Phone: c.Get("phone").(string),
+	}
+
+	return c.JSON(http.StatusOK, models.BaseResponse[models.User]{
+		Status:  "success",
+		Message: "get user profile success",
+		Data:    user,
+	})
 }

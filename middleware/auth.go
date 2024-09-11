@@ -2,7 +2,9 @@ package middleware
 
 import (
 	"bitbucket.org/bri_bootcamp/patungan-backend-go/models"
+	"bitbucket.org/bri_bootcamp/patungan-backend-go/pkg/db"
 	"bitbucket.org/bri_bootcamp/patungan-backend-go/pkg/jwt"
+	"context"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strings"
@@ -32,6 +34,15 @@ func AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		// validate
 		claims, err := jwt.ValidateToken(token)
 		if err != nil {
+			return echo.NewHTTPError(http.StatusUnauthorized, models.BaseResponse[string]{
+				Status:  "failed",
+				Message: "Unauthorized - invalid token",
+			})
+		}
+
+		// check to redis
+		redisClient := db.ConnectToRedis()
+		if redisClient.Get(context.Background(), claims.Email).Val() == "" {
 			return echo.NewHTTPError(http.StatusUnauthorized, models.BaseResponse[string]{
 				Status:  "failed",
 				Message: "Unauthorized - invalid token",

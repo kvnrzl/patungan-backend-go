@@ -29,7 +29,7 @@ func SetupRoutes(e *echo.Echo) {
 		logrus.Fatal("error connect to db")
 	}
 
-	err = database.AutoMigrate(&models.User{}, &models.Category{}, &models.Campaign{}, &models.Donation{})
+	err = database.AutoMigrate(&models.User{}, &models.Category{}, &models.Campaign{}, &models.Donation{}, &models.Payment{})
 	if err != nil {
 		logrus.Fatal("error migrate table")
 	}
@@ -80,4 +80,17 @@ func SetupRoutes(e *echo.Echo) {
 
 	donationRoutes.POST("/campaigns/:campaign_id/donate", middleware.AuthMiddleware(donationController.CreateDonationRegisteredUser))
 	donationRoutes.POST("/campaigns/:campaign_id/donate/guest", donationController.CreateDonationGuestUser)
+
+	// ====================================================================
+
+	paymentRepository := repositories.InitPaymentRepository()
+	paymentService := services.InitPaymentService(database, paymentRepository, donationRepository)
+	paymentController := controllers.InitPaymentController(paymentService, validate)
+
+	paymentRoutes := e.Group("/api/v1")
+
+	paymentRoutes.POST("/payments", paymentController.CreatePayment)
+	paymentRoutes.POST("/payments/callback", paymentController.PaymentCallback)
+
+	// ====================================================================
 }

@@ -6,6 +6,7 @@ import (
 	"bitbucket.org/bri_bootcamp/patungan-backend-go/src/services"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
+	"github.com/midtrans/midtrans-go/snap"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -42,7 +43,7 @@ func (dc *PaymentController) CreatePayment(c echo.Context) error {
 	payment := createPaymentRequest.ToEntity()
 	logrus.Println("payment: ", payment)
 
-	payment, err := dc.service.Create(payment)
+	payment, snapResp, err := dc.service.CreateTransaction(payment)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, models.BaseResponse[string]{
 			Status:  "failed",
@@ -50,9 +51,17 @@ func (dc *PaymentController) CreatePayment(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, models.BaseResponse[models.Payment]{
+	newData := struct {
+		Payment      models.Payment `json:"payment"`
+		SnapResponse *snap.Response `json:"snap_response"`
+	}{
+		Payment:      payment,
+		SnapResponse: snapResp,
+	}
+
+	return c.JSON(http.StatusOK, models.BaseResponse[any]{
 		Status:  "success",
 		Message: "payment created",
-		Data:    payment,
+		Data:    newData,
 	})
 }

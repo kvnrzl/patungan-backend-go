@@ -38,3 +38,20 @@ func (cr *PaymentRepository) Create(tx *gorm.DB, userInput models.Payment) (mode
 
 	return payment, nil
 }
+
+func (cr *PaymentRepository) Update(tx *gorm.DB, userInput models.Payment) (models.Payment, error) {
+
+	var payment models.Payment
+
+	result := tx.Save(&userInput)
+
+	if err := result.Error; err != nil {
+		return models.Payment{}, err
+	}
+
+	if err := result.Last(&payment).Error; err != nil {
+		return models.Payment{}, err
+	}
+
+	return payment, nil
+}

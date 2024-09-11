@@ -53,3 +53,23 @@ func (cr *DonationRepository) GetByID(tx *gorm.DB, id uint) (models.Donation, er
 
 	return donation, nil
 }
+
+func (cr *DonationRepository) GetUserDonation(tx *gorm.DB, id uint) (models.User, error) {
+
+	var user models.User
+
+	err := tx.Table("donations").
+		Joins("JOIN users ON users.id = donations.user_id").
+		Where("donations.id = ?", id).
+		Select("users.name, users.email, users.phone").
+		Scan(&user).Error
+
+	if err != nil {
+		fmt.Println("Error fetching donations with users:", err)
+		return models.User{}, err
+	} else {
+		fmt.Println("Donations with user data:", user)
+		return user, nil
+	}
+
+}

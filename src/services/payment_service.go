@@ -41,6 +41,11 @@ func (ps *PaymentService) CreateTransaction(input models.Payment) (models.Paymen
 	// get user donation
 	user, _ := ps.donationRepository.GetUserDonation(ps.db, input.DonationID)
 
+	// create payment
+	payment, err := ps.paymentRepository.Create(ps.db, input)
+	if err != nil {
+		return models.Payment{}, nil, err
+	}
 	// ====================================================================
 	// MIDTRANS API
 
@@ -51,7 +56,7 @@ func (ps *PaymentService) CreateTransaction(input models.Payment) (models.Paymen
 	// 2. Initiate Snap request param
 	req := &snap.Request{
 		TransactionDetails: midtrans.TransactionDetails{
-			OrderID:  strconv.Itoa(int(input.DonationID)),
+			OrderID:  strconv.Itoa(int(payment.ID)),
 			GrossAmt: int64(input.Amount),
 		},
 		//CreditCard: &snap.CreditCardDetails{
@@ -75,13 +80,22 @@ func (ps *PaymentService) CreateTransaction(input models.Payment) (models.Paymen
 
 	// ====================================================================
 
-	// create payment
-	payment, err := ps.paymentRepository.Create(ps.db, input)
+	return payment, snapResp, nil
+
+}
+
+func (ps *PaymentService) UpdatePaymentStatus(payment models.Payment) error {
+	// update payment status
+	fmt.Println("payment nih: ", payment)
+	payment, err := ps.paymentRepository.Update(ps.db, payment)
 	if err != nil {
-		return models.Payment{}, nil, err
+		logrus.Println("error update payment status: ", err)
+		return err
 	}
 
-	return payment, snapResp, nil
+	fmt.Println("payment: ", payment)
+
+	return nil
 
 }
 

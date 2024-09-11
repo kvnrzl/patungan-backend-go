@@ -89,6 +89,7 @@ func SetupRoutes(e *echo.Echo) {
 	paymentRoutes := e.Group("/api/v1")
 
 	paymentRoutes.POST("/payments", paymentController.CreatePayment)
+	paymentRoutes.POST("/payments/callback", paymentController.PaymentCallback)
 
 	// ====================================================================
 }

@@ -41,9 +41,8 @@ func (ds *DonationService) CreateDonationGuestUser(donation models.Donation) (mo
 	}
 
 	// Set user id to donation
+	donation.User = models.User{}
 	donation.UserID = user.ID
-	fmt.Println("donation cuyyy: ", donation)
-	fmt.Println("donation.UserID: ", donation.UserID)
 
 	// then create donation
 	return ds.donationRepository.Create(ds.db, donation)

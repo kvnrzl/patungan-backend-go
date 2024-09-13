@@ -14,5 +14,5 @@ func main() {
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
 	}))
 	routes.SetupRoutes(e)
-	e.Logger.Fatal(e.Start("localhost:9090"))
+	e.Logger.Fatal(e.Start(":9090"))
 }

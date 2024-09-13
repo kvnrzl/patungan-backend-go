@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"bitbucket.org/bri_bootcamp/fp-patungan-backend-go/models"
+	"bitbucket.org/bri_bootcamp/patungan-backend-go/models"
 	"gorm.io/gorm"
 )
 

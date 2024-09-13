@@ -29,9 +29,9 @@ pipelines:
                   docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
                   docker pull $DOCKER_USERNAME/patungan-backend-go:latest
                   echo "Stopping and removing old container ..."
-                  docker stop my-backend || true
-                  docker rm my-backend || true
+                  docker stop patungan-backend-go || true
+                  docker rm patungan-backend-go || true
                   echo "Removing old untagged images ..."
                   docker images --filter "dangling=true" -q | xargs -r docker rmi
                   echo "Running new container ..."
-                  docker run --name my-backend -e USERNAME="${DB_USERNAME}" -e PASSWORD="${DB_PASSWORD}" -e HOST="${DB_HOST}" -e PORT="${DB_PORT}" -e DBNAME="${DB_NAME}" -e GEMINIKEY=${GEMINI_KEY} --network my-network -p 9090:9090 -d $DOCKER_USERNAME/patungan-backend-go:latest
+                  docker run --name patungan-backend-go -e USERNAME="${DB_USERNAME}" -e PASSWORD="${DB_PASSWORD}" -e HOST="${DB_HOST}" -e PORT="${DB_PORT}" -e DBNAME="${DB_NAME}" --network my-network -p 9090:9090 -d $DOCKER_USERNAME/patungan-backend-go:latest

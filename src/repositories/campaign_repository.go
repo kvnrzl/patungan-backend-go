@@ -16,7 +16,7 @@ func InitCampaignRepository() CampaignRepository {
 func (cr *CampaignRepository) GetAll(tx *gorm.DB) ([]models.Campaign, error) {
 	var campaigns []models.Campaign
 
-	if err := tx.Find(&campaigns).Error; err != nil {
+	if err := tx.Preload("Category").Find(&campaigns).Error; err != nil {
 		return nil, err
 	}
 
@@ -26,8 +26,7 @@ func (cr *CampaignRepository) GetAll(tx *gorm.DB) ([]models.Campaign, error) {
 func (cr *CampaignRepository) GetByID(tx *gorm.DB, id uint) (models.Campaign, error) {
 	var campaign models.Campaign
 
-	fmt.Println("database DB :", tx)
-	if err := tx.First(&campaign, "id = ?", id).Error; err != nil {
+	if err := tx.Preload("Category").First(&campaign, "id = ?", id).Error; err != nil {
 		return models.Campaign{}, err
 	}
 
@@ -38,7 +37,7 @@ func (cr *CampaignRepository) GetByTitle(tx *gorm.DB, title string) (models.Camp
 	var campaign models.Campaign
 
 	fmt.Println("database DB :", tx)
-	if err := tx.First(&campaign, "title = ?", title).Error; err != nil {
+	if err := tx.Preload("Category").First(&campaign, "title = ?", title).Error; err != nil {
 		return models.Campaign{}, err
 	}
 
@@ -62,7 +61,7 @@ func (cr *CampaignRepository) Create(tx *gorm.DB, campaignInput models.Campaign)
 	return campaign, nil
 }
 
-//func (cr *CampaignRepository) Update(tx *gorm.DB, campaignInput models.Campaign, id string) (models.Campaign, error) {
+//func (cr *CampaignRepository) Update(tx *gorm.DB, campaignInput models.Campaign, id uint) (models.Campaign, error) {
 //	campaign, err := cr.GetByID(tx, id)
 //
 //	if err != nil {
@@ -77,6 +76,17 @@ func (cr *CampaignRepository) Create(tx *gorm.DB, campaignInput models.Campaign)
 //
 //	return campaign, nil
 //}
+
+func (cr *CampaignRepository) UpdateCollected(tx *gorm.DB, input models.Campaign) (models.Campaign, error) {
+	var campaign models.Campaign
+
+	campaign = input
+	if err := tx.Save(&campaign).Error; err != nil {
+		return models.Campaign{}, err
+	}
+
+	return campaign, nil
+}
 
 func (cr *CampaignRepository) Delete(tx *gorm.DB, id uint) error {
 	campaign, err := cr.GetByID(tx, id)

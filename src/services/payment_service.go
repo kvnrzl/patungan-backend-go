@@ -19,13 +19,15 @@ type PaymentService struct {
 	db                 *gorm.DB
 	paymentRepository  repositories.PaymentRepository
 	donationRepository repositories.DonationRepository
+	campaignRepository repositories.CampaignRepository
 }
 
-func InitPaymentService(db *gorm.DB, paymentRepository repositories.PaymentRepository, donationRepository repositories.DonationRepository) PaymentService {
+func InitPaymentService(db *gorm.DB, paymentRepository repositories.PaymentRepository, donationRepository repositories.DonationRepository, campaignRepository repositories.CampaignRepository) PaymentService {
 	return PaymentService{
 		db:                 db,
 		paymentRepository:  paymentRepository,
 		donationRepository: donationRepository,
+		campaignRepository: campaignRepository,
 	}
 }
 
@@ -56,12 +58,9 @@ func (ps *PaymentService) CreateTransaction(input models.Payment) (models.Paymen
 	// 2. Initiate Snap request param
 	req := &snap.Request{
 		TransactionDetails: midtrans.TransactionDetails{
-			OrderID:  strconv.Itoa(int(payment.ID)),
+			OrderID:  strconv.Itoa(int(input.DonationID)),
 			GrossAmt: int64(input.Amount),
 		},
-		//CreditCard: &snap.CreditCardDetails{
-		//	Secure: true,
-		//},
 		CustomerDetail: &midtrans.CustomerDetails{
 			FName: user.Name,
 			Email: user.Email,
@@ -85,8 +84,32 @@ func (ps *PaymentService) CreateTransaction(input models.Payment) (models.Paymen
 }
 
 func (ps *PaymentService) UpdatePaymentStatus(payment models.Payment) error {
+
+	// if status 'settlement' then update donation status
+	if payment.PaymentStatus == "settlement" {
+		donation, err := ps.donationRepository.GetByID(ps.db, payment.DonationID)
+		if err != nil {
+			logrus.Println("error get donation: ", err)
+			return err
+		}
+
+		//update the campaign collected
+		campaign, err := ps.campaignRepository.GetByID(ps.db, donation.CampaignID)
+		if err != nil {
+			logrus.Println("error get campaign: ", err)
+			return err
+		}
+
+		campaign.Collected = campaign.Collected + payment.Amount
+		_, err = ps.campaignRepository.UpdateCollected(ps.db, campaign)
+		if err != nil {
+			logrus.Println("error update campaign collected amount: ", err)
+			return err
+		}
+		logrus.Println("campaign collected updated: ", campaign.Collected)
+	}
+
 	// update payment status
-	fmt.Println("payment nih: ", payment)
 	payment, err := ps.paymentRepository.Update(ps.db, payment)
 	if err != nil {
 		logrus.Println("error update payment status: ", err)

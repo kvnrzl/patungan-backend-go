@@ -18,12 +18,12 @@ func (cr *DonationRepository) Create(tx *gorm.DB, input models.Donation) (models
 	var donation models.Donation
 
 	//result := tx.Exec(`
-	//    INSERT INTO donations (created_at, updated_at, deleted_at, campaign_id, amount, user_id, comment)
-	//    VALUES (?, ?, ?, ?, ?, ?, ?)`,
+	//   INSERT INTO donations (created_at, updated_at, deleted_at, campaign_id, amount, user_id, comment)
+	//   VALUES (?, ?, ?, ?, ?, ?, ?)`,
 	//	time.Now(),
 	//	time.Now(),
 	//	input.DeletedAt,
-	//	input.DonationID,
+	//	input.CampaignID,
 	//	input.Amount,
 	//	input.UserID,
 	//	input.Comment,

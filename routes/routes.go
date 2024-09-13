@@ -56,8 +56,8 @@ func SetupRoutes(e *echo.Echo) {
 
 	campaignRoutes.POST("/campaigns", middleware.AuthMiddleware(campaignController.Create))
 	campaignRoutes.GET("/campaigns", campaignController.GetAll)
-	//campaignRoutes.GET("/campaigns/:id", campaignController.GetByID)
-	campaignRoutes.GET("/campaigns/:title", campaignController.GetByTitle)
+	campaignRoutes.GET("/campaigns/:id", campaignController.GetByID)
+	//campaignRoutes.GET("/campaigns/:title", campaignController.GetByTitle)
 
 	// ====================================================================
 
@@ -84,7 +84,7 @@ func SetupRoutes(e *echo.Echo) {
 	// ====================================================================
 
 	paymentRepository := repositories.InitPaymentRepository()
-	paymentService := services.InitPaymentService(database, paymentRepository, donationRepository)
+	paymentService := services.InitPaymentService(database, paymentRepository, donationRepository, campaignRepository)
 	paymentController := controllers.InitPaymentController(paymentService, validate)
 
 	paymentRoutes := e.Group("/api/v1")

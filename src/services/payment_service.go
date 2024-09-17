@@ -94,6 +94,7 @@ func (ps *PaymentService) UpdatePaymentStatus(payment models.Payment) error {
 		tx.Rollback()
 		return err
 	}
+	fmt.Println("payment updated: ", payment)
 
 	// if status 'settlement' then update donation status
 	if payment.PaymentStatus == "settlement" {
@@ -121,6 +122,8 @@ func (ps *PaymentService) UpdatePaymentStatus(payment models.Payment) error {
 		}
 		logrus.Println("campaign collected updated: ", campaign.Collected)
 	}
+
+	tx.Commit()
 
 	fmt.Println("payment: ", payment)
 

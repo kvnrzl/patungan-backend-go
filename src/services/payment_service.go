@@ -58,7 +58,7 @@ func (ps *PaymentService) CreateTransaction(input models.Payment) (models.Paymen
 	// 2. Initiate Snap request param
 	req := &snap.Request{
 		TransactionDetails: midtrans.TransactionDetails{
-			OrderID:  strconv.Itoa(int(input.DonationID)),
+			OrderID:  strconv.Itoa(int(payment.ID)),
 			GrossAmt: int64(input.Amount),
 		},
 		CustomerDetail: &midtrans.CustomerDetails{
@@ -85,35 +85,41 @@ func (ps *PaymentService) CreateTransaction(input models.Payment) (models.Paymen
 
 func (ps *PaymentService) UpdatePaymentStatus(payment models.Payment) error {
 
+	// update payment status
+	tx := ps.db.Begin()
+
+	payment, err := ps.paymentRepository.Update(tx, payment)
+	if err != nil {
+		logrus.Println("error update payment status: ", err)
+		tx.Rollback()
+		return err
+	}
+
 	// if status 'settlement' then update donation status
 	if payment.PaymentStatus == "settlement" {
-		donation, err := ps.donationRepository.GetByID(ps.db, payment.DonationID)
+		donation, err := ps.donationRepository.GetByID(tx, payment.DonationID)
 		if err != nil {
 			logrus.Println("error get donation: ", err)
+			tx.Rollback()
 			return err
 		}
 
 		//update the campaign collected
-		campaign, err := ps.campaignRepository.GetByID(ps.db, donation.CampaignID)
+		campaign, err := ps.campaignRepository.GetByID(tx, donation.CampaignID)
 		if err != nil {
 			logrus.Println("error get campaign: ", err)
+			tx.Rollback()
 			return err
 		}
 
 		campaign.Collected = campaign.Collected + payment.Amount
-		_, err = ps.campaignRepository.UpdateCollected(ps.db, campaign)
+		_, err = ps.campaignRepository.UpdateCollected(tx, campaign)
 		if err != nil {
 			logrus.Println("error update campaign collected amount: ", err)
+			tx.Rollback()
 			return err
 		}
 		logrus.Println("campaign collected updated: ", campaign.Collected)
-	}
-
-	// update payment status
-	payment, err := ps.paymentRepository.Update(ps.db, payment)
-	if err != nil {
-		logrus.Println("error update payment status: ", err)
-		return err
 	}
 
 	fmt.Println("payment: ", payment)

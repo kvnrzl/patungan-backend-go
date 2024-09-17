@@ -2,6 +2,7 @@ package dto
 
 import (
 	"bitbucket.org/bri_bootcamp/patungan-backend-go/models"
+	"gorm.io/gorm"
 	"strconv"
 )
 
@@ -14,7 +15,7 @@ type MidtransCallback struct {
 
 // to models.Payment
 func (mc *MidtransCallback) ToEntity() models.Payment {
-	donationID, err := strconv.Atoi(mc.OrderID)
+	paymentID, err := strconv.Atoi(mc.OrderID)
 	if err != nil {
 		return models.Payment{}
 	}
@@ -23,7 +24,9 @@ func (mc *MidtransCallback) ToEntity() models.Payment {
 	amount, err := strconv.ParseFloat(mc.GrossAmount, 64)
 
 	return models.Payment{
-		DonationID:    uint(donationID),
+		Model: gorm.Model{
+			ID: uint(paymentID),
+		},
 		PaymentStatus: mc.TransactionStatus,
 		PaymentMethod: mc.PaymentType,
 		Amount:        amount,

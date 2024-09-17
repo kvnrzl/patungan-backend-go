@@ -4,13 +4,11 @@ import (
 	"bitbucket.org/bri_bootcamp/patungan-backend-go/dto"
 	"bitbucket.org/bri_bootcamp/patungan-backend-go/models"
 	"bitbucket.org/bri_bootcamp/patungan-backend-go/src/services"
-	"encoding/json"
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/midtrans/midtrans-go/snap"
 	"github.com/sirupsen/logrus"
-	"io"
 	"net/http"
 )
 
@@ -70,18 +68,10 @@ func (dc *PaymentController) CreatePayment(c echo.Context) error {
 }
 
 func (dc *PaymentController) PaymentCallback(c echo.Context) error {
-	body, err := io.ReadAll(c.Request().Body)
-	if err != nil {
-		logrus.Println("Unable to read body")
-		return c.JSON(http.StatusBadRequest, models.BaseResponse[string]{
-			Status:  "failed",
-			Message: "Unable to read body",
-		})
-	}
-	defer c.Request().Body.Close()
 
 	var callbackData dto.MidtransCallback
-	if err := json.Unmarshal(body, &callbackData); err != nil {
+	err := c.Bind(&callbackData)
+	if err != nil {
 		return c.JSON(http.StatusBadRequest, models.BaseResponse[string]{
 			Status:  "failed",
 			Message: "invalid request",
@@ -104,5 +94,8 @@ func (dc *PaymentController) PaymentCallback(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, "Callback received")
+	return c.JSON(http.StatusOK, models.BaseResponse[string]{
+		Status:  "success",
+		Message: "payment status updated",
+	})
 }
